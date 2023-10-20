@@ -2,23 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import UserContext from "../../../contexts/UserContext";
 import styled from "styled-components";
 import { getPersonalInformations } from "../../../services/enrollmentApi";
+import useEnrollment from "../../../hooks/api/useEnrollment";
 
 export default function Payment() {
   const {userData, setUserData} = useContext(UserContext)
-  const [enrollment, setEnrollment] = useState()
-
-  useEffect(()=>{
-    console.log(userData.token)
-    const getEnrollment = getPersonalInformations(userData.token)
-    getEnrollment.then((res) =>{
-      console.log(res)
-      setEnrollment(res)
-    })
-    getEnrollment.catch((err)=>{
-      console.log(err)
-      setEnrollment(null)
-    })
-  },[])
+  const {enrollment} = useEnrollment() 
   return(
     <>
       <SCPageHeader>Ingresso e pagamento</SCPageHeader>
@@ -26,7 +14,7 @@ export default function Payment() {
       <SCNotEnrolled>
         <SCNotEnrolledMsg>Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso</SCNotEnrolledMsg>
       </SCNotEnrolled> 
-      : "OK"}
+      : "Escolher o tipo de ingresso em breve!"}
     </>
   )}
 
