@@ -3,8 +3,10 @@ import styled from "styled-components"
 import IconeDeHospede from "./Icone";
 import IconeDeHospedeVago from "./Icone";
 import IconePreenchido from "./IconePreenchido";
+import IconeUsuario from "./IconeOutroHospede";
 
-export default function QuartoComponent({ id, num, cap, escolherQuarto, cor }) {
+
+export default function QuartoComponent({ id, reservasNoQuarto, num, cap, escolherQuarto, cor }) {
 
 
 
@@ -13,9 +15,10 @@ export default function QuartoComponent({ id, num, cap, escolherQuarto, cor }) {
 
   const [capacidade, setCapacidade] = useState([])
   const [quartoSelecionado, setQuartoSelecionado] = useState(cor)
-
+const [nesteQuarto, setNesteQuarto]=useState(reservasNoQuarto)
 
   const imagensDeCapacidade = [];
+  const reservadosAqui = []
 
 
 
@@ -25,6 +28,15 @@ export default function QuartoComponent({ id, num, cap, escolherQuarto, cor }) {
 
 
   useEffect(() => {
+  
+
+
+  for (let i = 0; i < reservasNoQuarto; i++) {
+    reservadosAqui.push(1);
+  }
+
+
+
 
     for (let i = 0; i < cap; i++) {
       imagensDeCapacidade.push(1);
@@ -38,10 +50,10 @@ export default function QuartoComponent({ id, num, cap, escolherQuarto, cor }) {
 
   function escolherEsteQuarto(id) {
     escolherQuarto(id)
+    console.log(nesteQuarto)
   }
 
-
-
+if (reservasNoQuarto === 0 || !reservasNoQuarto) {
   return (
     <QuartoCard key={id} onClick={() => escolherEsteQuarto(id)} cor={cor}>
       <Numero>
@@ -50,13 +62,13 @@ export default function QuartoComponent({ id, num, cap, escolherQuarto, cor }) {
 
       {cor ? (
         <Capacidade>
-          <IconePreenchido i={0} />
+          <IconeUsuario i={0} />
 
-          {Array(cap - 1).fill().map((_, index) => (<IconeDeHospedeVago />))}
+          {Array(cap - 1).fill().map((_, index) => (<IconeDeHospedeVago key={index}/>))}
         </Capacidade>
         ) : (
         <Capacidade>
-          {Array(cap).fill().map((_, index) => (<IconeDeHospedeVago />))}
+          {Array(cap).fill().map((_, index) => (<IconeDeHospedeVago key={index}/>))}
         </Capacidade>
       )}
 
@@ -65,6 +77,54 @@ export default function QuartoComponent({ id, num, cap, escolherQuarto, cor }) {
 
     </QuartoCard>
   )
+} else if (reservasNoQuarto >= 1 && reservasNoQuarto < cap){
+  return (
+    <QuartoCard key={id} onClick={() => escolherEsteQuarto(id)} cor={cor}>
+      <Numero>
+        <p>{num}</p>
+      </Numero>
+
+      {cor ? (
+        <Capacidade>
+          <IconeUsuario i={0} />
+
+          {Array(cap - 2).fill().map((_, index) => (<IconeDeHospede key={index}/>))}
+          {Array(reservasNoQuarto).fill().map((_, index) => (<IconePreenchido key={index}/>))}
+        </Capacidade>
+        ) : (
+        <Capacidade>
+          {Array(cap-1).fill().map((_, index) => (<IconeDeHospedeVago key={index}/>))}
+          {Array(reservasNoQuarto).fill().map((_, index) => (<IconePreenchido key={index}/>))}
+        </Capacidade>
+      )}
+
+
+
+
+    </QuartoCard>
+  )
+} else if(reservasNoQuarto === cap){
+  return (
+    <QuartoCard key={id} onClick={() => escolherEsteQuarto(id)} cor={false}>
+      <Numero>
+        <p>{num}</p>
+      </Numero>
+
+     
+        <Capacidade>
+        {Array(cap-1).fill().map((_, index) => (<IconeDeHospedeVago key={index}/>))}
+          {Array(reservasNoQuarto).fill().map((_, index) => (<IconePreenchido key={index}/>))}
+        </Capacidade>
+     
+
+
+
+
+    </QuartoCard>
+  )
+}
+
+
 }
 
 const QuartoCard = styled.div`

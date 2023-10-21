@@ -1,32 +1,69 @@
 import styled from "styled-components";
 import { FormWrapper } from "../../../components/PersonalInformationForm/FormWrapper";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from 'axios';
 import HotelComponent from "../../../components/Dashboard/HotelComponent";
 import QuartoComponent from "../../../components/Dashboard/QuartoComponent";
 import DetalhesDaEscolha from "../../../components/Dashboard/EscolhidoComponent";
+import UserContext from "../../../contexts/UserContext";
+import useTicket from "../../../hooks/api/useTicket";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Hotel() {
+  const [paginaAberta, setPaginaAberta] = useState(false)
   const [hoteisArray, setHoteisArray] = useState([])
+  const { userData, setUserData } = useContext(UserContext)
+  const { ticket } = useTicket()
+  const [ticketStatus, setTicketStatus] = useState()//ticket.status
+  const [ticketRemote, setTicketRemote] = useState()//ticket.TicketType.isRemote
+  const [includesHotel, setIncludesHotel] = useState()//ticket.TicketType.includesHotel
+  const [detalhes, setDetalhes] = useState([])
+  const [next, setNext] = useState(true)
+  const [hotelEscolhido, setHotelEscolhido] = useState()
+  const [quartoEscolhido, setQuartoEscolhido] = useState()
+  const [mostraQuartos, setMostraQuartos] = useState(false)
+  const [quartos, setQuartos] = useState([])
+  const [reservasDoHotel, setReservasDoHotel]=useState()
+  const [quartoReservado, setQuatoReservado] = useState()
+  const navigate = useNavigate()
 
-
-  const [detalhes, setDetalhes]=useState([])
-  const [next, setNext]=useState(false)
-
-
-  function reservar(){
-  setNext(!next)
-}
 
   const url = "http://localhost:4000"
 
   useEffect(() => {
 
-    const config = { headers: { Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5NzczMjczN30.tM4r5bGAbFE3s88MepxvJqApZ5dmL3pokH00G-N39wM` } }
+    if (!userData.token) {
+      navigate("/sign-in")
+    }
+
+    if (ticket) {
+      setTicketStatus(ticket.status)
+      setTicketRemote(ticket.TicketType.isRemote)
+      setIncludesHotel(ticket.TicketType.includesHotel)
+    }
+    setPaginaAberta(true)
+
+    const config = { headers: { Authorization: `Bearer ${userData.token}` } }
+
+    const getBooking = axios.get(`${url}/booking/`, config)
+    getBooking.then((res) => {
+      if (res.data.Room) {
+        setQuatoReservado(res.data.Room)
+        setNext(false)
+      } else {
+        setNext(true)
+      }
+
+    })
+    getBooking.catch((err) => {
+      console.log(err.response.data)
+    })
+
+
+
     const getHoteis = axios.get(`${url}/hotels`, config)
     getHoteis.then((res) => {
-      console.log(res.data)
       setHoteisArray(res.data)
     })
 
@@ -34,20 +71,14 @@ export default function Hotel() {
       console.log(err.response.data)
     })
 
-
-  }, [])
-
+  }, [ticket])
 
 
 
-  const [hotelEscolhido, setHotelEscolhido] = useState()
-  const [quartoEscolhido, setQuartoEscolhido] = useState()
-  const [mostraQuartos, setMostraQuartos] = useState(false)
-  const [quartos, setQuartos] = useState([])
 
 
   function carregarQuartosDoHotel(id) {
-    const config = { headers: { Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5NzczMjczN30.tM4r5bGAbFE3s88MepxvJqApZ5dmL3pokH00G-N39wM` } }
+    const config = { headers: { Authorization: `Bearer ${userData.token}` } }
     const quartosDesteHotel = axios.get(`${url}/hotels/${id}`, config)
     quartosDesteHotel.then((res) => {
       console.log(res.data.Rooms)
@@ -56,6 +87,20 @@ export default function Hotel() {
     quartosDesteHotel.catch((err) => {
       console.log(err.response.data)
     })
+
+   
+
+
+
+    /*const quartosCompartilhados = quartos.map((quarto)=> {
+      const reservasDoQuarto = reservasDoQuarto.filter((reserva)=>reserva.roomId === quarto.id)
+      const outrasReservasNoQuarto = reservasDoHotel.length;
+      return {...quartos, ocupação: outrasReservasNoQuarto}
+    })
+    setQuartos(quartosCompartilhados)
+
+    console.log("quartos compartilhados" + quartosCompartilhados)*/
+
   }
 
 
@@ -64,72 +109,125 @@ export default function Hotel() {
     setMostraQuartos(true)
     carregarQuartosDoHotel(id)
     setQuartoEscolhido(null)
+    const config = { headers: { Authorization: `Bearer ${userData.token}` } }
+    const getBookingsDoHotel = axios.get(`${url}/booking/${id}`, config)
+    getBookingsDoHotel.then((res)=>{
+      console.log(res.data)
+      setReservasDoHotel(res.data)
+    })
+    getBookingsDoHotel.catch((err)=>{
+      console.log(err.response.data)
+    })
+
+
   }
 
   function escolherQuarto(id) {
     setQuartoEscolhido(id)
   }
 
+  function reservar() {
+    const config = { headers: { Authorization: `Bearer ${userData.token}` } }
+    const body = { roomId: quartoEscolhido }
+    if (quartoReservado && quartoReservado.id !== quartoEscolhido) {
+      const trocarReserva = axios.put(`${url}/booking/${quartoReservado.id}`, body, config)
+      trocarReserva.then((res) => {
+        
+        console.log("Reserva de quarto trocada com sucesso!")
+      })
+      trocarReserva.catch((err) => {
+        console.log(err.response.data)
+      })
+      setNext(!next)
+    } else {
+      const reservarEsteQuarto = axios.post(`${url}/booking/`, body, config)
+      reservarEsteQuarto.then((res) => {
+        console.log("Quarto reservado com sucesso!")
+        setNext(!next)
+      })
+      reservarEsteQuarto.catch((err) => {
+        console.log(err.response.data)
+      })
+     
+    }
+  }
+
+
+  if (ticketRemote === true || includesHotel === false) {
+    return (
+      <><h1>Sua modalidade de ingresso não inclui hospedagem
+        Prossiga para a escolha de atividades</h1></>
+    )
+  }
+
+  if (ticketRemote === false && ticketStatus === "RESERVED") {
+    return (
+      <><h1>Você precisa ter confirmado pagamento antes
+        de fazer a escolha de hospedagem</h1></>
+    )
+  }
+
 
 
   return (
     <>
-   
+
       <AreaDoHotel>
         <h1>Escolha de hotel e quarto</h1>
       </AreaDoHotel>
-      { next ? (
-      <div>
-        <HoteisTitulo>
-          <h2>Primeiro, escolha seu hotel</h2>
-        </HoteisTitulo>
+      {next ? (
+        <div>
+          <HoteisTitulo>
+            <h2>Primeiro, escolha seu hotel</h2>
+          </HoteisTitulo>
 
-        <DivDosHoteis>
+          <DivDosHoteis>
 
-          {hoteisArray.map((hotel) => (
-            <HotelComponent
-              id={hotel.id}
-              name={hotel.name}
-              image={hotel.image}
-              escolherHotel={() => escolherHotel(hotel.id)}
-              cor={hotelEscolhido == (hotel.id)}
-            />
-          ))}
-
-        </DivDosHoteis>
-
-
-        <EscolhaQuarto display={mostraQuartos}>
-          <QuartosTitulo>
-            <h1>Ótima pedida! Agora escolha seu quarto</h1>
-          </QuartosTitulo>
-
-          <DivDosQuartos>
-            {quartos.map((quarto) => (
-              <QuartoComponent 
-                key={quarto.id}
-                num={quarto.name}
-                cap={quarto.capacity} 
-                escolherQuarto={()=> escolherQuarto(quarto.id)}
-                cor={quartoEscolhido == (quarto.id)}/>
+            {hoteisArray.map((hotel) => (
+              <HotelComponent
+                id={hotel.id}
+                name={hotel.name}
+                image={hotel.image}
+                escolherHotel={() => escolherHotel(hotel.id)}
+                cor={hotelEscolhido == (hotel.id)}
+              />
             ))}
 
+          </DivDosHoteis>
 
-          </DivDosQuartos>
 
-          <ReservarQuartoButton onClick={reservar}>RESERVAR QUARTO</ReservarQuartoButton>
-        </EscolhaQuarto>
-      </div>
-      ) : 
-      (
-      <DetalhesDaEscolha 
-      hotelId={hotelEscolhido}
-      quartoId={quartoEscolhido}
-      reservar={reservar}
-      />
-      )}
+          <EscolhaQuarto display={mostraQuartos}>
+            <QuartosTitulo>
+              <h1>Ótima pedida! Agora escolha seu quarto</h1>
+            </QuartosTitulo>
 
-      
+            <DivDosQuartos>
+              {quartos.map((quarto) => (
+                <QuartoComponent
+                  key={quarto.id}
+                  id={quarto.id}
+                  reservasNoQuarto={reservasDoHotel.filter((reserva) => reserva.roomId === quarto.id).length}
+                  num={quarto.name}
+                  cap={quarto.capacity}
+                  escolherQuarto={() => escolherQuarto(quarto.id)}
+                  cor={quartoEscolhido == (quarto.id)} />
+              ))}
+
+
+            </DivDosQuartos>
+
+            <ReservarQuartoButton onClick={reservar}>RESERVAR QUARTO</ReservarQuartoButton>
+          </EscolhaQuarto>
+        </div>
+      ) :
+        (
+          <DetalhesDaEscolha
+            quartoReservado={quartoReservado}
+            setNext={setNext}
+          />
+        )}
+
+
     </>
   );
 }
