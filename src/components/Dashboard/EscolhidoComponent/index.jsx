@@ -16,6 +16,18 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
     useEffect(() => {
         console.log(quartoReservado)
         const config = { headers: { Authorization: `Bearer ${userData.token}` } }
+
+
+        const usuarioJaReservou = axios.get(`${url}/booking`, config)
+        usuarioJaReservou.then((res)=>{
+            if (res.data.length === 0){
+                setNext(true)
+            }
+        })
+
+
+
+
         const quartosDesteHotel = axios.get(`${url}/hotels/${quartoReservado.hotelId}`, config)
             .then((res) => {
                 setHotelDetalhes(res.data)

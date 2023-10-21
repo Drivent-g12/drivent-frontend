@@ -206,7 +206,7 @@ export default function Hotel() {
                 <QuartoComponent
                   key={quarto.id}
                   id={quarto.id}
-                  reservasNoQuarto={reservasDoHotel.filter((reserva) => reserva.roomId === quarto.id).length}
+                  reservasNoQuarto={reservasDoHotel?.filter((reserva) => reserva.roomId === quarto.id).length}
                   num={quarto.name}
                   cap={quarto.capacity}
                   escolherQuarto={() => escolherQuarto(quarto.id)}
