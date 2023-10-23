@@ -4,7 +4,7 @@ import { Detalhes, DetalhesDiv, HotelCard, ImagemDiv } from "../HotelComponent";
 import axios from "axios";
 import UserContext from "../../../contexts/UserContext";
 
-export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
+export default function DetalhesDaEscolha({ quartoReservado, setNext , next}) {
 
     const url = "http://localhost:4000"
     const { userData, setUserData } = useContext(UserContext)
@@ -14,6 +14,7 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
 
 
     useEffect(() => {
+        
         console.log(quartoReservado)
         const config = { headers: { Authorization: `Bearer ${userData.token}` } }
 
@@ -23,6 +24,8 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
             if (res.data.length === 0){
                 setNext(true)
             }
+          
+            console.log(res.data)
         })
 
 
@@ -47,7 +50,7 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
 
 
 
-        }, [quartoReservado])
+        }, [])
 
 
 
@@ -55,6 +58,8 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
         function trocarDeQuarto() {
             setNext(true)
         }
+
+    
 
         return (
             <>
@@ -68,12 +73,12 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
                     </ImagemDiv>
                     <DetalhesDiv>
                         <Detalhes>
-                            <h1>{hotelDetalhes.name}</h1>
+                            <h1>{hotelDetalhes?.name}</h1>
                         </Detalhes>
 
                         <Detalhes>
                             <h2>Quarto reservado:</h2>
-                            <p>{quartoReservado.name}</p>
+                            <p>{quartoReservado?.name}</p>
                         </Detalhes>
 
                         <Detalhes>
