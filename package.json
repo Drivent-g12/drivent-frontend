@@ -18,6 +18,7 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
+    "akar-icons": "^1.9.29",
     "axios": "^1.5.1",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
