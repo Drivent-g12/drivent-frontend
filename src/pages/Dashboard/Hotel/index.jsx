@@ -38,6 +38,7 @@ export default function Hotel() {
     }
 
     if (ticket) {
+      console.log(ticket)
       setTicketStatus(ticket.status)
       setTicketRemote(ticket.TicketType.isRemote)
       setIncludesHotel(ticket.TicketType.includesHotel)
@@ -160,7 +161,7 @@ export default function Hotel() {
     )
   }
 
-  if (ticketRemote === false && ticketStatus === "RESERVED") {
+  if ((!ticket) || (ticketRemote === false && ticketStatus === "RESERVED")) {
     return (
       <><h1>Você precisa ter confirmado pagamento antes
         de fazer a escolha de hospedagem</h1></>
@@ -224,6 +225,7 @@ export default function Hotel() {
           <DetalhesDaEscolha
             quartoReservado={quartoReservado}
             setNext={setNext}
+            next={next}
           />
         )}
 
