@@ -7,6 +7,7 @@ import useTicket from "../../../hooks/api/useTicket";
 import creditCardChip from '../../../assets/images/creditcardchip.png';
 import Input from "../../../components/Form/Input";
 import { CircleCheckFill } from 'akar-icons';
+import { processPayment } from "../../../services/paymentApi";
 
 export default function Payment() {
   const { userData, setUserData } = useContext(UserContext)
@@ -20,7 +21,8 @@ export default function Payment() {
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardValidThru, setCardValidThru] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [ticketId, setTicketId] = useState();
 
   const ticketTypeRelation = {
     1: 'Online',
@@ -31,29 +33,56 @@ export default function Payment() {
   async function setTicketPaid() {
     setConfirmationVisibility(true);
     setCardVisibility(false);
+    const paymentData = {
+      ticketId: ticketId,
+      cardData: {
+        issuer: "card issuer",  // fix later
+        number: cardNumber,
+        name: cardName,
+        expirationDate: cardValidThru,
+        cvv: cardCvv,
+      },
+    };
+    console.log(paymentData);
+    const request = processPayment(paymentData, userData.token)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      })
   }
 
   async function reserveTicket() {
     setCardVisibility(true);
     setPaymentOptionsVisibility(false);
-    // const request = createTicket(ticketType, userData.token)
-    //   .then((res) => {
-    //     console.log(res)
-    //   })
-    //   .catch((err) => {
-    //     console.log(err)
-    //   })
+    const request = createTicket(ticketType, userData.token)
+      .then((res) => {
+        console.log(res);
+        setTicketId(res.id);
+      })
+      .catch((err) => {
+        console.log(err);
+      })
   }
   useEffect(() => {
     if (ticket) {
-      setTicketType(ticket.ticketTypeId)
-    }
-  }, [ticket, ticketType, setTicketType])
+      setTicketType(ticket.ticketTypeId);
+      setTicketId(ticket.id);
+      if (ticket.status === 'RESERVED') {
+        setCardVisibility(true);
+        setPaymentOptionsVisibility(false);
+      }
+      else if (ticket.status === 'PAID') {
+        setPaymentOptionsVisibility(false);
+        setConfirmationVisibility(true);
+        setCardVisibility(false);
+      }
+    };
+  }, [ticket, ticketType, setTicketType]);
   return (
     <>
       <SCPageHeader>Ingresso e pagamento</SCPageHeader>
-      {ticket ? "" :
-        <>
           {!enrollment ?
             <SCNotEnrolled>
               <SCNotEnrolledMsg>Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso</SCNotEnrolledMsg>
@@ -141,12 +170,12 @@ export default function Payment() {
                       <InputWrapper>
                         <Input
                           style={{ width: '143px', marginLeft: '7px' }}
-                          name="cvc"
-                          label="CVC"
+                          name="cvv"
+                          label="CVV"
                           type="password"
                           maxLength="3"
-                          value={cardCvc}
-                          onChange={e => setCardCvc(e.target.value.substring(0, 3))}
+                          value={cardCvv}
+                          onChange={e => setCardCvv(e.target.value.substring(0, 3))}
                         />
                       </InputWrapper>
                     </div>
@@ -161,16 +190,14 @@ export default function Payment() {
                   <SCSelectedType>{ticketTypeRelation[ticketType]}<SCPriceSpan>R$ {500 + (ticketType > 1) * 50 + (ticketType === 3) * 100}</SCPriceSpan></SCSelectedType>
                 </SCButtonContainer>
                 <SCTicketTypeHeader>Pagamento</SCTicketTypeHeader>
-                <div style={{display: "flex"}}>
+                <div style={{ display: "flex" }}>
                   <CircleCheckFill color="#36B853" size={44} />
-                  <div style={{marginTop: "6px", marginLeft: "10px", fontFamily: "Roboto", color: "#454545"}}>
+                  <div style={{ marginTop: "6px", marginLeft: "10px", fontFamily: "Roboto", color: "#454545" }}>
                     <p><strong>Pagamento confirmado!</strong></p>
                     <p>Prossiga para escolha de hospedagem e atividades</p>
                   </div>
                 </div>
               </span>
-            </>
-          }
         </>
       }
     </>
