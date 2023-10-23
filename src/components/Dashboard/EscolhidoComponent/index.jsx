@@ -23,6 +23,7 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext }) {
             if (res.data.length === 0){
                 setNext(true)
             }
+            console.log(res.data)
         })
 
 
