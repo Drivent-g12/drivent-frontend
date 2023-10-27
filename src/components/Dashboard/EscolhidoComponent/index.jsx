@@ -28,26 +28,18 @@ export default function DetalhesDaEscolha({hotelEscolhido, quartoReservado, setN
             console.log(res.data)
         })
 
-
-
-
-      /*  const quartosDesteHotel = axios.get(`${url}/hotels/${quartoReservado.hotelId}`, config)
+if (hotelEscolhido.length === 0){
+      const quartosDesteHotel = axios.get(`${url}/hotels/${quartoReservado.hotelId}`, config)
             .then((res) => {
                 setHotelDetalhes(res.data)
-            })*/
-
-
-
-        
+            })}
+ 
         const getBookingsDoHotel = axios.get(`${url}/booking/${quartoReservado.hotelId}`, config)
         getBookingsDoHotel.then((res) => {
         setOutrosAqui(res.data.filter((reserva) => reserva.roomId === quartoReservado.id).length)
         console.log(res.data.filter((reserva) => reserva.roomId === quartoReservado.id).length)
         }
             )
-
-
-
 
 
         }, [paginaAberta])
@@ -69,7 +61,7 @@ export default function DetalhesDaEscolha({hotelEscolhido, quartoReservado, setN
 
                 <HotelCard>
                     <ImagemDiv>
-                        <img src={hotelDetalhes.image ? hotelDetalhes.image : ""} alt="Imagem do hotel" />
+                        <img src={hotelDetalhes?.image ? hotelDetalhes.image : ""} alt="Imagem do hotel" />
                     </ImagemDiv>
                     <DetalhesDiv>
                         <Detalhes>
