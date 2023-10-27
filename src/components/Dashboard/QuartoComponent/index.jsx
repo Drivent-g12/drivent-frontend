@@ -6,7 +6,7 @@ import IconePreenchido from "./IconePreenchido";
 import IconeUsuario from "./IconeOutroHospede";
 
 
-export default function QuartoComponent({ id, reservasNoQuarto, num, cap, escolherQuarto, cor }) {
+export default function QuartoComponent({ id, reservasNoQuarto, num, cap, escolherQuarto, cor , escolhidoPeloUsuario }) {
 
 
 
@@ -15,7 +15,8 @@ export default function QuartoComponent({ id, reservasNoQuarto, num, cap, escolh
 
   const [capacidade, setCapacidade] = useState([])
   const [quartoSelecionado, setQuartoSelecionado] = useState(cor)
-const [nesteQuarto, setNesteQuarto]=useState(reservasNoQuarto)
+  const [nesteQuarto, setNesteQuarto]=useState(reservasNoQuarto)
+ 
 
   const imagensDeCapacidade = [];
   const reservadosAqui = []
@@ -29,7 +30,7 @@ const [nesteQuarto, setNesteQuarto]=useState(reservasNoQuarto)
 
   useEffect(() => {
   
-
+console.log(escolhidoPeloUsuario)
 
   for (let i = 0; i < reservasNoQuarto; i++) {
     reservadosAqui.push(1);
@@ -49,6 +50,10 @@ const [nesteQuarto, setNesteQuarto]=useState(reservasNoQuarto)
 
 
   function escolherEsteQuarto(id) {
+    if (escolhidoPeloUsuario){
+      alert("Você já está nesse quarto, escolha outro ou prossiga para as atividades")
+     return
+    }
     escolherQuarto(id)
     console.log(nesteQuarto)
   }
@@ -105,8 +110,8 @@ if (reservasNoQuarto === 0 || !reservasNoQuarto) {
   )
 } else if(reservasNoQuarto === cap){
   return (
-    <QuartoCard key={id} onClick={() => escolherEsteQuarto(id)} cor={false}>
-      <Numero>
+    <QuartoCard key={id} cor={false} full={true}>
+      <Numero full={true}>
         <p>{num}</p>
       </Numero>
 
@@ -128,7 +133,13 @@ if (reservasNoQuarto === 0 || !reservasNoQuarto) {
 }
 
 const QuartoCard = styled.div`
- background-color: ${props => props.cor ? "#FFEED2" : "#F1F1F1"};
+ background-color: ${props => {if (props.cor) {
+  return "#FFEED2"
+ } else if (props.full === true){
+  return "#CECECE"
+ } else if (props.cor === false){
+  return "white"
+ }}};
   width: 190px;
   height: 45px;
   display: flex;
@@ -140,7 +151,7 @@ const QuartoCard = styled.div`
   align-items: center;
   overflow: hidden;
   &:hover {
-    outline: 3px solid blue;
+    outline: ${props => props.full ? "none" : "3px solid blue"} ;
   }
 
 `
@@ -162,4 +173,5 @@ height: 100%;
 display: flex;
 align-items: center;
 margin-left: 5px;
+color:  ${props => props.full ? "grey" : "black"} ;
 `

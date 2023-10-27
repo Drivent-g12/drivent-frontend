@@ -4,17 +4,17 @@ import { Detalhes, DetalhesDiv, HotelCard, ImagemDiv } from "../HotelComponent";
 import axios from "axios";
 import UserContext from "../../../contexts/UserContext";
 
-export default function DetalhesDaEscolha({ quartoReservado, setNext , next}) {
+export default function DetalhesDaEscolha({hotelEscolhido, quartoReservado, setNext , next , paginaAberta}) {
 
     const url = "http://localhost:4000"
     const { userData, setUserData } = useContext(UserContext)
-    const [hotelDetalhes, setHotelDetalhes] = useState([])
+    const [hotelDetalhes, setHotelDetalhes] = useState(hotelEscolhido[0])
     const [outrosAqui, setOutrosAqui]=useState(0)
 
 
 
     useEffect(() => {
-        
+        console.log(hotelEscolhido)
         console.log(quartoReservado)
         const config = { headers: { Authorization: `Bearer ${userData.token}` } }
 
@@ -31,10 +31,10 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext , next}) {
 
 
 
-        const quartosDesteHotel = axios.get(`${url}/hotels/${quartoReservado.hotelId}`, config)
+      /*  const quartosDesteHotel = axios.get(`${url}/hotels/${quartoReservado.hotelId}`, config)
             .then((res) => {
                 setHotelDetalhes(res.data)
-            })
+            })*/
 
 
 
@@ -50,7 +50,7 @@ export default function DetalhesDaEscolha({ quartoReservado, setNext , next}) {
 
 
 
-        }, [])
+        }, [paginaAberta])
 
 
 
