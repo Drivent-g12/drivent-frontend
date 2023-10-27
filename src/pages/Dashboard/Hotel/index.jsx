@@ -18,7 +18,6 @@ export default function Hotel() {
   const [ticketStatus, setTicketStatus] = useState()//ticket.status
   const [ticketRemote, setTicketRemote] = useState()//ticket.TicketType.isRemote
   const [includesHotel, setIncludesHotel] = useState()//ticket.TicketType.includesHotel
-  const [detalhes, setDetalhes] = useState([])
   const [next, setNext] = useState(true)
   const [hotelEscolhido, setHotelEscolhido] = useState()
   const [quartoEscolhido, setQuartoEscolhido] = useState()
@@ -26,6 +25,7 @@ export default function Hotel() {
   const [quartos, setQuartos] = useState([])
   const [reservasDoHotel, setReservasDoHotel]=useState()
   const [quartoReservado, setQuatoReservado] = useState()
+  const [quartoId, setQuartoId]=useState()
   const navigate = useNavigate()
 
 
@@ -38,6 +38,7 @@ export default function Hotel() {
     }
 
     if (ticket) {
+      console.log("ó o ticket")
       console.log(ticket)
       setTicketStatus(ticket.status)
       setTicketRemote(ticket.TicketType.isRemote)
@@ -50,8 +51,11 @@ export default function Hotel() {
     const getBooking = axios.get(`${url}/booking/`, config)
     getBooking.then((res) => {
       if (res.data.Room) {
+        
+        
         setQuatoReservado(res.data.Room)
         setNext(false)
+        setQuartoId(res.data.Room.id)
       } else {
         setNext(true)
       }
@@ -72,7 +76,7 @@ export default function Hotel() {
       console.log(err.response.data)
     })
 
-  }, [ticket])
+  }, [paginaAberta])
 
 
 
@@ -88,20 +92,6 @@ export default function Hotel() {
     quartosDesteHotel.catch((err) => {
       console.log(err.response.data)
     })
-
-   
-
-
-
-    /*const quartosCompartilhados = quartos.map((quarto)=> {
-      const reservasDoQuarto = reservasDoQuarto.filter((reserva)=>reserva.roomId === quarto.id)
-      const outrasReservasNoQuarto = reservasDoHotel.length;
-      return {...quartos, ocupação: outrasReservasNoQuarto}
-    })
-    setQuartos(quartosCompartilhados)
-
-    console.log("quartos compartilhados" + quartosCompartilhados)*/
-
   }
 
 
@@ -128,12 +118,13 @@ export default function Hotel() {
   }
 
   function reservar() {
+    
     const config = { headers: { Authorization: `Bearer ${userData.token}` } }
     const body = { roomId: quartoEscolhido }
     if (quartoReservado && quartoReservado.id !== quartoEscolhido) {
       const trocarReserva = axios.put(`${url}/booking/${quartoReservado.id}`, body, config)
       trocarReserva.then((res) => {
-        
+        setPaginaAberta(false)
         console.log("Reserva de quarto trocada com sucesso!")
       })
       trocarReserva.catch((err) => {
@@ -143,6 +134,7 @@ export default function Hotel() {
     } else {
       const reservarEsteQuarto = axios.post(`${url}/booking/`, body, config)
       reservarEsteQuarto.then((res) => {
+        setPaginaAberta(false)
         console.log("Quarto reservado com sucesso!")
         setNext(!next)
       })
@@ -211,7 +203,8 @@ export default function Hotel() {
                   num={quarto.name}
                   cap={quarto.capacity}
                   escolherQuarto={() => escolherQuarto(quarto.id)}
-                  cor={quartoEscolhido == (quarto.id)} />
+                  cor={quartoEscolhido == (quarto.id)} 
+                  escolhidoPeloUsuario={quartoId === quarto.id}/>
               ))}
 
 
@@ -223,9 +216,11 @@ export default function Hotel() {
       ) :
         (
           <DetalhesDaEscolha
+          hotelEscolhido={hoteisArray.filter((hotel)=> hotel.id === hotelEscolhido)}
             quartoReservado={quartoReservado}
             setNext={setNext}
             next={next}
+            paginaAberta={paginaAberta}
           />
         )}
 
