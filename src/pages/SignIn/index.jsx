@@ -14,6 +14,8 @@ import UserContext from '../../contexts/UserContext';
 
 import useSignIn from '../../hooks/api/useSignIn';
 
+import githubLogo from '../../assets/images/github-mark-white.svg';
+
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +26,7 @@ export default function SignIn() {
   const { setUserData } = useContext(UserContext);
 
   const navigate = useNavigate();
-  
+
   async function submit(event) {
     event.preventDefault();
 
@@ -36,7 +38,7 @@ export default function SignIn() {
     } catch (err) {
       toast('Não foi possível fazer o login!');
     }
-  } 
+  }
 
   return (
     <AuthLayout background={eventInfo.backgroundImageUrl}>
@@ -51,6 +53,10 @@ export default function SignIn() {
           <Input label="Senha" type="password" fullWidth value={password} onChange={e => setPassword(e.target.value)} />
           <Button type="submit" color="primary" fullWidth disabled={loadingSignIn}>Entrar</Button>
         </form>
+        <Button style={{ background: "black" }} fullWidth disabled={loadingSignIn}>
+          <img src={githubLogo} style={{width: "18px", marginBottom: "2px", marginRight: "6px"}} />
+          Entrar com GitHub
+        </Button>
       </Row>
       <Row>
         <Link to="/enroll">Não possui login? Inscreva-se</Link>
